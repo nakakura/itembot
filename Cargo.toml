@@ -6,3 +6,6 @@ authors = ["Toshiya Nakakura <nakakura@me.com>"]
 [dependencies]
 lazy_static = "0.2.9"
 regex = "0.2.2"
+diesel = { version = "0.16", features = ["mysql", "chrono"] }
+diesel_codegen = { version = "0.16", features = ["mysql"] }
+chrono = "0.4"
