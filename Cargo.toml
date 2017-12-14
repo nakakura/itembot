@@ -1,0 +1,8 @@
+[package]
+name = "itembot"
+version = "0.1.0"
+authors = ["Toshiya Nakakura <nakakura@me.com>"]
+
+[dependencies]
+lazy_static = "0.2.9"
+regex = "0.2.2"
