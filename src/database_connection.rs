@@ -30,7 +30,6 @@ mod tests {
     use std::env;
 
     use super::db_uri;
-    use super::connection;
 
     #[test]
     fn test_db_url_without_env() {

@@ -3,9 +3,11 @@
 #[macro_use] extern crate lazy_static;
 extern crate regex;
 extern crate chrono;
+extern crate futures;
+extern crate tokio_core;
 
 pub mod database_connection;
 pub mod models;
 pub mod slack_command;
 pub mod schema;
-
+pub mod stream;

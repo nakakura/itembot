@@ -3,9 +3,16 @@ name = "itembot"
 version = "0.1.0"
 authors = ["Toshiya Nakakura <nakakura@me.com>"]
 
+[[bin]]
+name = "emulation"
+path = "src/bin/emulation.rs"
+
 [dependencies]
 lazy_static = "0.2.9"
 regex = "0.2.2"
 diesel = { version = "0.16", features = ["mysql", "chrono"] }
 diesel_codegen = { version = "0.16", features = ["mysql"] }
 chrono = "0.4"
+futures = "0.1.17"
+tokio-core = "0.1.10"
+
