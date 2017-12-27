@@ -46,7 +46,7 @@ pub fn delete(item: &str) -> QueryResult<usize> {
     }))
 }
 
-pub fn update(item: &str, borrower_str: &str) -> QueryResult<usize> {
+pub fn borrow(item: &str, borrower_str: &str) -> QueryResult<usize> {
      database_connection::connection((|connection| {
         diesel::update(items.filter(title.eq(item)))
             .set(borrower.eq(borrower_str))

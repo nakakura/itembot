@@ -19,10 +19,9 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
 
     let _ = thread::spawn(move || {
         let mut core = Core::new().unwrap();
-        let x = receiver.fold((add_tx, user_tx), |tx, x| {
-            let tx0 = tx.0.send(x.clone()).wait().unwrap();
-            let tx1 = tx.1.send(x.clone()).wait().unwrap();
-            Ok((tx0, tx1))
+        let senders = vec!(add_tx, user_tx);
+        let x = receiver.fold(senders, |tx, x| {
+            Ok(tx.into_iter().map(|sender| sender.send(x.clone()).wait().unwrap() ).collect())
         });
         let _ = core.run(x);
     });
