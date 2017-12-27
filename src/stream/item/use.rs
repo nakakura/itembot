@@ -9,7 +9,7 @@ use std::sync::Arc;
 use slack_command::SlackCommand;
 use models::query::items;
 
-const COMMAND_NAME: &str = "add";
+const COMMAND_NAME: &str = "use";
 
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
@@ -27,8 +27,10 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
 }
 
 fn filter(post: &Arc<SlackCommand>) -> bool {
-    post.plugin == super::PLUGIN_NAME &&
+    post.plugin == super::PLUGIN_NAME && (
         (post.command == COMMAND_NAME && post.params.len() > 0)
+            || (post.command == "number" && post.number.is_some())
+    )
 }
 
 fn create_message(result: Result<String, diesel::result::Error>) -> String {

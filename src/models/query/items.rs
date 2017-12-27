@@ -13,9 +13,9 @@ pub fn insert_borrower(title_str: &str, owner_str: &str, borrower_opt: Option<St
     let new_post = NewItem {
         title: title_str,
         owner: owner_str,
+        borrower: borrower_opt,
         registered_date: Some(native),
         due_date: None,
-        borrower: borrower_opt
     };
 
     database_connection::connection(|connection| {
@@ -31,6 +31,12 @@ pub fn insert(title_str: &str, owner_str: &str) -> QueryResult<usize> {
 pub fn select(item: &str) -> QueryResult<Vec<Item>> {
     database_connection::connection(|connection| {
         items.filter(title.like(format!("%{}%", item))).load::<Item>(connection)
+    })
+}
+
+pub fn list_borrow_items(name: &str) -> QueryResult<Vec<Item>> {
+    database_connection::connection(|connection| {
+        items.filter(borrower.eq(name)).load::<Item>(connection)
     })
 }
 
