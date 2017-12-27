@@ -49,12 +49,12 @@ fn extract_params(str: &str) -> Option<Vec<String>> {
 
 #[derive(Debug, PartialOrd, PartialEq, Clone)]
 pub struct SlackCommand {
-    user: String,
-    channel: String,
-    command: String,
-    sub_command: String,
-    params: Vec<String>,
-    number: Option<usize>,
+    pub user: String,
+    pub channel: String,
+    pub plugin: String,
+    pub command: String,
+    pub params: Vec<String>,
+    pub number: Option<usize>,
 }
 
 impl SlackCommand {
@@ -64,8 +64,8 @@ impl SlackCommand {
             Some(SlackCommand {
                 user: usr.to_string(),
                 channel: channel.to_string(),
-                command: vec[0].clone(),
-                sub_command: "number".to_string(),
+                plugin: vec[0].clone(),
+                command: "number".to_string(),
                 params: vec!(),
                 number: Some(vec[1].parse::<usize>().unwrap()),
             })
@@ -75,8 +75,8 @@ impl SlackCommand {
             Some(SlackCommand {
                 user: usr.to_string(),
                 channel: channel.to_string(),
-                command: params[0].clone(),
-                sub_command: p[0].to_string(),
+                plugin: params[0].clone(),
+                command: p[0].to_string(),
                 params: vec,
                 number: None,
             })
@@ -168,9 +168,9 @@ mod tests {
         let result = SlackCommand::create_command("user1", "channel1", "mono item 1").unwrap();
         assert_eq!(result.user, "user1".to_string());
         assert_eq!(result.channel, "channel1".to_string());
-        assert_eq!(result.command, "item".to_string());
+        assert_eq!(result.plugin, "item".to_string());
         assert_eq!(result.params, Vec::<String>::new());
-        assert_eq!(result.sub_command, "number".to_string());
+        assert_eq!(result.command, "number".to_string());
         assert_eq!(result.number, Some(1));
     }
 
@@ -179,9 +179,9 @@ mod tests {
         let result = SlackCommand::create_command("user1", "channel1", "mono item 1afdafa").unwrap();
         assert_eq!(result.user, "user1".to_string());
         assert_eq!(result.channel, "channel1".to_string());
-        assert_eq!(result.command, "item".to_string());
+        assert_eq!(result.plugin, "item".to_string());
         assert_eq!(result.params, Vec::<String>::new());
-        assert_eq!(result.sub_command, "1afdafa".to_string());
+        assert_eq!(result.command, "1afdafa".to_string());
         assert_eq!(result.number, None);
     }
 
@@ -190,9 +190,9 @@ mod tests {
         let result = SlackCommand::create_command("user1", "channel1", "mono item 1 afdafa").unwrap();
         assert_eq!(result.user, "user1".to_string());
         assert_eq!(result.channel, "channel1".to_string());
-        assert_eq!(result.command, "item".to_string());
+        assert_eq!(result.plugin, "item".to_string());
         assert_eq!(result.params, vec!("afdafa".to_string()));
-        assert_eq!(result.sub_command, "1".to_string());
+        assert_eq!(result.command, "1".to_string());
         assert_eq!(result.number, None);
     }
 
@@ -201,8 +201,8 @@ mod tests {
         let result = SlackCommand::create_command("user1", "channel1", "mono x y").unwrap();
         assert_eq!(result.user, "user1".to_string());
         assert_eq!(result.channel, "channel1".to_string());
-        assert_eq!(result.command, "x".to_string());
-        assert_eq!(result.sub_command, "y".to_string());
+        assert_eq!(result.plugin, "x".to_string());
+        assert_eq!(result.command, "y".to_string());
         assert_eq!(result.params, Vec::<String>::new());
         assert_eq!(result.number, None);
     }

@@ -10,6 +10,8 @@ use std::sync::Arc;
 
 use slack_command::SlackCommand;
 
+pub const PLUGIN_NAME: &str = "item";
+
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
     let (add_tx, add_rx) = mpsc::channel::<Arc<SlackCommand>>(5000);

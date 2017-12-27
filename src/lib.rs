@@ -11,3 +11,4 @@ pub mod models;
 pub mod slack_command;
 pub mod schema;
 pub mod stream;
+pub mod myerror;
