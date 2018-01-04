@@ -28,7 +28,7 @@ pub fn insert(title_str: &str, owner_str: &str) -> QueryResult<usize> {
     insert_borrower(title_str, owner_str, None)
 }
 
-pub fn select(item: &str) -> QueryResult<Vec<Item>> {
+pub fn search_items(item: &str) -> QueryResult<Vec<Item>> {
     database_connection::connection(|connection| {
         items.filter(title.like(format!("%{}%", item))).load::<Item>(connection)
     })
