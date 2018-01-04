@@ -33,10 +33,10 @@ fn create_message<E>(result: Result<Vec<Item>, E>) -> String {
     if let Ok(items) = result {
         if items.len() > 0 {
             items.into_iter().fold("似たタイトルのアイテムはこれだけだよ".to_string(), |sum, x| {
-                if let Some(borrower) = x.borrower {
-                    format!("{}\n{} ({}さんが借りているよ)", sum, x.title, borrower)
-                } else {
+                if x.borrower == "" {
                     format!("{}\n{}", sum, x.title)
+                } else {
+                    format!("{}\n{} ({}さんが借りているよ)", sum, x.title, x.borrower)
                 }
             })
         } else {

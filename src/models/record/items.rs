@@ -7,7 +7,7 @@ pub struct Item {
     pub id: i64, //diesen can only handle i64 not u64;
     pub title: String,
     pub owner: String,
-    pub borrower: Option<String>,
+    pub borrower: String,
     pub registered_date: Option<NaiveDateTime>,
     pub due_date: Option<NaiveDateTime>,
 }
@@ -17,7 +17,7 @@ pub struct Item {
 pub struct NewItem<'a> {
     pub title: &'a str,
     pub owner: &'a str,
-    pub borrower: Option<String>,
+    pub borrower: &'a str,
     pub registered_date: Option<NaiveDateTime>,
     pub due_date: Option<NaiveDateTime>,
 }

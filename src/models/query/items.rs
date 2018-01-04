@@ -7,13 +7,13 @@ use chrono::prelude::*;
 use database_connection;
 use models::record::items::*;
 
-pub fn insert_borrower(title_str: &str, owner_str: &str, borrower_opt: Option<String>) -> QueryResult<usize> {
+pub fn insert_borrower(title_str: &str, owner_str: &str, borrower_str: &str) -> QueryResult<usize> {
     let native: NaiveDateTime = Local::now().naive_utc();
 
     let new_post = NewItem {
         title: title_str,
         owner: owner_str,
-        borrower: borrower_opt,
+        borrower: borrower_str,
         registered_date: Some(native),
         due_date: None,
     };
@@ -25,7 +25,7 @@ pub fn insert_borrower(title_str: &str, owner_str: &str, borrower_opt: Option<St
 }
 
 pub fn insert(title_str: &str, owner_str: &str) -> QueryResult<usize> {
-    insert_borrower(title_str, owner_str, None)
+    insert_borrower(title_str, owner_str, "")
 }
 
 pub fn search_items(item: &str) -> QueryResult<Vec<Item>> {
