@@ -46,10 +46,20 @@ pub fn delete(item: &str) -> QueryResult<usize> {
     }))
 }
 
-pub fn borrow(item: &str, borrower_str: &str) -> QueryResult<usize> {
+pub fn borrow_item(item: &str, borrower_str: &str) -> QueryResult<usize> {
+    println!("{} use {}", borrower_str, item);
      database_connection::connection((|connection| {
         diesel::update(items.filter(title.eq(item)))
             .set(borrower.eq(borrower_str))
+            .execute(connection)
+    }))
+}
+
+pub fn return_item(item: &str, borrower_str: &str) -> QueryResult<usize> {
+    println!("{} release {}", borrower_str, item);
+    database_connection::connection((|connection| {
+        diesel::update(items.filter(title.eq(item)).filter(borrower.eq(borrower_str)))
+            .set(borrower.eq(""))
             .execute(connection)
     }))
 }

@@ -9,7 +9,7 @@ use std::sync::Arc;
 use slack_command::SlackCommand;
 use models::query::items;
 
-const COMMAND_NAME: &str = "add";
+const COMMAND_NAME: &str = "borrow";
 
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
@@ -22,7 +22,12 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
 }
 
 fn access_database(sender: mpsc::Sender<String>, command: Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
-    let result = items::insert(&command.params[0], &command.user).map(|_| "write success".to_string());
+    let result = items::borrow_item(&command.params[0], &command.user).map(|x| {
+        println!("borrow - {}", x);
+        if x > 0 { "write success".to_string() }
+        else { "item not found".to_string() }
+    });
+    println!("borrow {:?}", result);
     let message = create_message(result);
     let sender = sender.send(message).wait().unwrap();
     Ok(sender)
@@ -30,7 +35,7 @@ fn access_database(sender: mpsc::Sender<String>, command: Arc<SlackCommand>) -> 
 
 fn filter(post: &Arc<SlackCommand>) -> bool {
     post.plugin == super::PLUGIN_NAME &&
-        (post.command == COMMAND_NAME && post.params.len() > 0)
+        (post.command == COMMAND_NAME && post.params.len() > 0t)
 }
 
 fn create_message(result: Result<String, diesel::result::Error>) -> String {

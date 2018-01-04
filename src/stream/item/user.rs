@@ -15,15 +15,17 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
     let _ = thread::spawn(move || {
         let mut core = Core::new().unwrap();
-        let x = receiver.filter(filter).fold(tx_return_message, |sender, command| {
-            let result = items::list_borrow_items(&command.params[0]);
-            let message = create_message(result);
-            let sender = sender.send(message).wait().unwrap();
-            Ok(sender)
-        });
+        let x = receiver.filter(filter).fold(tx_return_message, access_database);
         let _ = core.run(x);
     });
     rx_return_message
+}
+
+fn access_database(sender: mpsc::Sender<String>, command: Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
+    let result = items::list_borrow_items(&command.params[0]);
+    let message = create_message(result);
+    let sender = sender.send(message).wait().unwrap();
+    Ok(sender)
 }
 
 fn create_message<E>(result: Result<Vec<Item>, E>) -> String {
