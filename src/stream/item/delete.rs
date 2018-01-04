@@ -9,7 +9,7 @@ use std::sync::Arc;
 use slack_command::SlackCommand;
 use models::query::items;
 
-const COMMAND_NAME: &str = "borrow";
+const COMMAND_NAME: &str = "delete";
 
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
@@ -22,12 +22,10 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
 }
 
 fn access_database(sender: mpsc::Sender<String>, command: Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
-    let result = items::borrow_item(&command.params[0], &command.user).map(|x| {
-        println!("borrow - {}", x);
-        if x > 0 { "write success".to_string() }
-        else { "item not found".to_string() }
+    let result = items::delete(&command.params[0]).map(|len| {
+        if len > 0 { "write success".to_string() }
+        else { "not found".to_string() }
     });
-    println!("borrow {:?}", result);
     let message = create_message(result);
     let sender = sender.send(message).wait().unwrap();
     Ok(sender)
