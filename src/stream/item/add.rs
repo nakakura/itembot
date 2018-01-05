@@ -8,17 +8,12 @@ use std::sync::Arc;
 
 use slack_command::SlackCommand;
 use models::query::items;
+use stream::item::*;
 
 const COMMAND_NAME: &str = "add";
 
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
-    let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
-    let _ = thread::spawn(move || {
-        let mut core = Core::new().unwrap();
-        let x = receiver.filter(filter).fold(tx_return_message, access_database);
-        let _ = core.run(x);
-    });
-    rx_return_message
+    start_item_module_receiver(Params((access_database, filter)), receiver)
 }
 
 fn access_database(sender: mpsc::Sender<String>, command: Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
@@ -42,4 +37,8 @@ fn create_message(result: Result<String, diesel::result::Error>) -> String {
         Err(Error::DatabaseError(DatabaseErrorKind::UniqueViolation, _)) => "unique violation".to_string(),
         _ => "something happen".to_string()
     }
+}
+
+pub fn adapter() -> (fn(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()>, fn(&Arc<SlackCommand>) -> bool) {
+    (access_database, filter)
 }

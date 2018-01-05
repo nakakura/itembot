@@ -1,3 +1,7 @@
+#![feature(unboxed_closures)]
+#![feature(fn_traits)]
+#![feature(conservative_impl_trait)]
+
 #![recursion_limit="128"] #[macro_use] extern crate diesel;
 #[macro_use] extern crate diesel_codegen;
 #[macro_use] extern crate lazy_static;
@@ -12,3 +16,5 @@ pub mod slack_command;
 pub mod schema;
 pub mod stream;
 pub mod myerror;
+
+

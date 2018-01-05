@@ -16,6 +16,23 @@ use slack_command::SlackCommand;
 
 pub const PLUGIN_NAME: &str = "item";
 
+pub type AccessDbType = FnMut(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()>;
+
+pub struct Params<F>((F, fn(&Arc<SlackCommand>)->bool))
+    where F: 'static + Send + FnMut(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()>;
+
+pub fn start_item_module_receiver<F>(f: Params<F>, receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String>
+    where F: 'static + Send + FnMut(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
+    let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
+    let Params(f) = f;
+    let _ = thread::spawn(move || {
+        let mut core = Core::new().unwrap();
+        let x = receiver.filter(f.1).fold(tx_return_message, f.0);
+        let _ = core.run(x);
+    });
+    rx_return_message
+}
+
 pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiver<String> {
     let (tx_return_message, rx_return_message) = mpsc::channel::<String>(5000);
     let (add_tx, add_rx) = mpsc::channel::<Arc<SlackCommand>>(5000);
