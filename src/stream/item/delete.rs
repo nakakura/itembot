@@ -20,14 +20,14 @@ enum DeleteStatusEnum {
 }
 
 #[derive(Debug, Clone, PartialOrd, PartialEq)]
-struct BorrowStatus {
-    status: DeleteStatusEnum,
+struct DeleteStatus {
+    pub status: DeleteStatusEnum,
     items: Vec<Item>,
 }
 
-impl BorrowStatus {
+impl DeleteStatus {
     pub fn default() -> Self {
-        BorrowStatus {
+        DeleteStatus {
             status: DeleteStatusEnum::NONE,
             items: vec!()
         }
@@ -43,11 +43,11 @@ pub fn set_receiver(receiver: mpsc::Receiver<Arc<SlackCommand>>) -> mpsc::Receiv
     start_item_module_receiver(Params((adapter(), filter)), receiver)
 }
 
-fn access_database(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, BorrowStatus), ()> {
+fn access_database(state: (mpsc::Sender<String>, &DeleteStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, DeleteStatus), ()> {
     match command.command.as_str() {
         "number" => num_command(state, command),
         COMMAND_NAME => delete_command(state, command),
-        _ => Ok((state.0, BorrowStatus::default())),
+        _ => Ok((state.0, DeleteStatus::default())),
     }
 }
 
@@ -56,7 +56,7 @@ fn filter(post: &Arc<SlackCommand>) -> bool {
 }
 
 fn adapter() -> impl FnMut(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mpsc::Sender<String>, ()> {
-    let mut state = BorrowStatus::default();
+    let mut state = DeleteStatus::default();
     move |sender, command| {
         let result = access_database((sender, &state), command)?;
         state = result.1;
@@ -64,17 +64,17 @@ fn adapter() -> impl FnMut(mpsc::Sender<String>, Arc<SlackCommand>) -> Result<mp
     }
 }
 
-fn delete_item(item: &Item, state: (mpsc::Sender<String>, &BorrowStatus)) -> Result<(mpsc::Sender<String>, BorrowStatus), ()> {
+fn delete_item(item: &Item, state: (mpsc::Sender<String>, &DeleteStatus)) -> Result<(mpsc::Sender<String>, DeleteStatus), ()> {
     if item.borrower == "" {
         let len = items::delete(&item.title).map_err(|_| ())?;
         if len == 1 {
             let message = format!("delete {}", item.title);
             let sender = state.0.send(message).wait().unwrap();
-            Ok((sender, BorrowStatus::default()))
+            Ok((sender, DeleteStatus::default()))
         } else {
             let message = format!("何かしらの理由で借りられなかったよ");
             let sender = state.0.send(message).wait().unwrap();
-            Ok((sender, BorrowStatus::default()))
+            Ok((sender, DeleteStatus::default()))
         }
     } else {
         let message = format!("{}は{}さんが借りているよ", item.title, item.borrower);
@@ -83,7 +83,11 @@ fn delete_item(item: &Item, state: (mpsc::Sender<String>, &BorrowStatus)) -> Res
     }
 }
 
-fn num_command(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, BorrowStatus), ()> {
+fn num_command(state: (mpsc::Sender<String>, &DeleteStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, DeleteStatus), ()> {
+    if state.1.status == DeleteStatusEnum::NONE {
+        return Ok((state.0, DeleteStatus::default()));
+    }
+
     let item_opt = state.1.specify_index(command.number.unwrap());
     if let Some(ref item) = item_opt {
         delete_item(item, state)
@@ -93,7 +97,7 @@ fn num_command(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<SlackC
     }
 }
 
-fn delete_command(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, BorrowStatus), ()> {
+fn delete_command(state: (mpsc::Sender<String>, &DeleteStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, DeleteStatus), ()> {
     let items = items::search_items(&command.params[0]).map_err(|_| ())?;
     match items.len() {
         1 => {
@@ -108,14 +112,14 @@ fn delete_command(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<Sla
                 }
             });
             let sender = state.0.send(message).wait().unwrap();
-            Ok((sender, BorrowStatus {
+            Ok((sender, DeleteStatus {
                 status: DeleteStatusEnum::MULTIPLE,
                 items: items,
             }))
         },
         _ => {
             let sender = state.0.send("そんなものなかったよ".to_string()).wait().unwrap();
-            Ok((sender, BorrowStatus::default()))
+            Ok((sender, DeleteStatus::default()))
         },
     }
 }

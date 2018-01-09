@@ -20,7 +20,7 @@ enum BorrowStatusEnum {
 
 #[derive(Debug, Clone, PartialOrd, PartialEq)]
 struct BorrowStatus {
-    status: BorrowStatusEnum,
+    pub status: BorrowStatusEnum,
     items: Vec<Item>,
 }
 
@@ -83,6 +83,10 @@ fn borrow_item(item: &Item, state: (mpsc::Sender<String>, &BorrowStatus), borrow
 }
 
 fn num_command(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<SlackCommand>) -> Result<(mpsc::Sender<String>, BorrowStatus), ()> {
+    if state.1.status == BorrowStatusEnum::NONE {
+        return Ok((state.0, BorrowStatus::default()));
+    }
+
     let item_opt = state.1.specify_index(command.number.unwrap());
     if let Some(ref item) = item_opt {
         borrow_item(item, state, &command.user)
