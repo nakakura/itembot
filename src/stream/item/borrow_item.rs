@@ -50,7 +50,7 @@ fn access_database(state: (mpsc::Sender<String>, &BorrowStatus), command: Arc<Sl
     }
 }
 
-fn filter(_post: &Arc<SlackCommand>) -> bool {
+fn filter(post: &Arc<SlackCommand>) -> bool {
     true
 }
 
