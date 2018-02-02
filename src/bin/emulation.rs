@@ -9,11 +9,12 @@ use tokio_core::reactor::Core;
 
 use std::io::stdin;
 use std::thread;
+use std::sync::Arc;
 
 use itembot::slack_command::SlackCommand;
 
 fn main() {
-    let (mut tx, rx): (mpsc::Sender<SlackCommand>, mpsc::Receiver<SlackCommand>) = mpsc::channel::<SlackCommand>(5000);
+    let (mut tx, rx) = mpsc::channel::<Arc<SlackCommand>>(5000);
     let receiver = itembot::stream::set_receiver(rx);
 
     let th = thread::spawn(move || {
@@ -33,7 +34,7 @@ fn main() {
         if line == "exit" {
             break;
         } else if let Some(post) = SlackCommand::create_command("user1", "channel1", line) {
-            tx = tx.send(post).wait().unwrap();
+            tx = tx.send(Arc::new(post)).wait().unwrap();
 
         }
     }
